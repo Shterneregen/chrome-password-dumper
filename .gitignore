@@ -1,0 +1,23 @@
+# NetBeans specific
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# Gradle
+.gradle
+.nb-gradle/
+out/
+.gradle/
+
+# IntelliJ project files 
+*.iml
+*.iws
+*.ipr
+.idea/
+
+test/
+*.jar

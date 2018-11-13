@@ -1,0 +1,30 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+mainClassName = 'random.Main'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile "org.xerial:sqlite-jdbc:3.23.1",
+            "net.java.dev.jna:jna-platform:5.0.0"
+}
+
+jar {
+    baseName = 'dump'
+
+    manifest {
+        attributes(
+                'Class-Path': configurations.compileClasspath.files.collect { "$it.name" }.join(' '),
+                'Main-Class': 'random.Main'
+        )
+    }
+
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
