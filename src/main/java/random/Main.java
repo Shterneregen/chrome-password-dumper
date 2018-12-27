@@ -14,12 +14,20 @@ public class Main {
 //        System.out.println(Extractor.getBroadcast());
 //        Extractor.getConnectedSSID();
 
-        final String newFiePath = args.length > 0 ? args[0] : "";
-        final String key = args.length > 1 ? args[1] : "";
+        final String mode = args.length > 0 ? args[0] : "";
+        final String newFiePath = args.length > 1 ? args[1] : "";
+        final String key = args.length > 2 ? args[2] : "";
         try {
-            final Dumper d = Dumper.dumpAccounts(newFiePath);
-            d.saveToFile(key);
+            final Dumper d = Dumper.dumpAccounts();
+            if (mode.equals("")) {
+                d.saveToFile(newFiePath, key);
+            } else if (mode.equals("-d")) {
+                d.saveToFile(newFiePath, key);
+            } else if (mode.equals("-sh")) {
+                d.show();
+            }
         } catch (Exception ignored) {
+            System.out.println(ignored);
         }
     }
 }

