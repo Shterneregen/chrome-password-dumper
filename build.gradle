@@ -12,6 +12,7 @@ repositories {
 dependencies {
     compile "org.xerial:sqlite-jdbc:3.23.1",
             "net.java.dev.jna:jna-platform:5.0.0"
+    testCompile "junit:junit:4.12"
 }
 
 jar {
