@@ -19,5 +19,7 @@ out/
 *.ipr
 .idea/
 
-test/
+# test/
 *.jar
+*.pub
+*.txt
