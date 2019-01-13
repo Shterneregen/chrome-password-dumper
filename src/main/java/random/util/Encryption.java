@@ -68,12 +68,12 @@ public class Encryption {
     //</editor-fold>
 
     //<editor-fold desc="decrypt">
-    static String decrypt(String privateKeyPath, String encryptedStr) {
+    public static String decrypt(String privateKeyPath, String encryptedStr) {
         try {
             PrivateKey privateKey = loadPrivate(privateKeyPath);
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] bts = hex2Byte(encryptedStr);
+            byte[] bts = hex2Byte(encryptedStr.replaceAll("\\s+", ""));
             byte[] decrypted = blockCipher(bts, Cipher.DECRYPT_MODE, cipher);
             String resStr = new String(decrypted, "UTF-8");
             return removeTheTrash(resStr);
@@ -218,6 +218,7 @@ public class Encryption {
     //</editor-fold>
 
     //<editor-fold desc="I/O">
+
     /**
      * Выводит в консоль ключевую пару
      *

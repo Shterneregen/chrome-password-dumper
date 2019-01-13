@@ -22,4 +22,5 @@ out/
 # test/
 *.jar
 *.pub
+*.key
 *.txt

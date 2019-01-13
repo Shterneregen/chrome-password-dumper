@@ -1,6 +1,10 @@
 package random;
 
 import random.util.Dumper;
+import random.util.Encryption;
+import random.util.Utils;
+
+import java.io.FileReader;
 
 public class Main {
     public static void main(final String[] args) {
@@ -12,10 +16,20 @@ public class Main {
             final Dumper d = Dumper.dumpAccounts();
             if (mode.equals("")) {
                 d.saveToFile(newFiePath, key);
-            } else if (mode.equals("-d")) { // dump
+            } else if (mode.equals("-dump")) { // dump
                 d.saveToFile(newFiePath, key);
             } else if (mode.equals("-sh")) { // show
                 d.show();
+            } else if (mode.equals("-g")) { // generate
+                Encryption.saveKeyPairBase64(args.length > 1 ? args[1] : ".\\");
+            } else if (mode.equals("-d") && args.length > 2) { // decrypt
+                String privateKeyPath = args[1];
+                String encryptedStr = args[2];
+                System.out.println(Encryption.decrypt(privateKeyPath, encryptedStr));
+            } else if (args[0].equals("-df") && args.length > 2) {
+                String privateKeyPath = args[1];
+                String filePath = args[2];
+                Utils.saveToFile(Encryption.decrypt(privateKeyPath, Utils.getStringFromReader(new FileReader(filePath))));
             }
         } catch (Exception ignored) {
             System.out.println(ignored);
