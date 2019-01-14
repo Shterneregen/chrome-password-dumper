@@ -19,7 +19,7 @@ out/
 *.ipr
 .idea/
 
-# test/
+test/keys/
 *.jar
 *.pub
 *.key
