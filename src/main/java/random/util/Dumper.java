@@ -4,9 +4,8 @@ import random.chrom.ChromeAccount;
 import random.chrom.ChromeDatabase;
 import random.chrom.ChromeProfile;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +22,7 @@ public class Dumper {
     }
 
     public static Dumper dumpAccounts() throws Exception {
-        final OperatingSystem os = OperatingSystem.getOperatingsystem();
+        final OperatingSystem os = OperatingSystem.getOperatingSystem();
         if (os == OperatingSystem.UNKNOWN) {
             throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
         }
@@ -36,7 +35,7 @@ public class Dumper {
 
         ArrayList<ChromeProfile> chromeProfiles;
         final String[] infoLines = Files.readAllLines(Paths.get(chromeInfo.toURI())).toArray(new String[]{});
-        switch (OperatingSystem.getOperatingsystem()) {
+        switch (OperatingSystem.getOperatingSystem()) {
             case WINDOWS:
                 chromeProfiles = Dumper.readProfiles(infoLines);
                 break;
@@ -117,7 +116,7 @@ public class Dumper {
 
         final List<String> lines = getInfo(false);
 
-//        final String pathToSave = OperatingSystem.getOperatingsystem().getSavePath();
+//        final String pathToSave = OperatingSystem.getOperatingSystem().getSavePath();
         File file = new File((newFiePath != null && !newFiePath.equals("") ? newFiePath : ".")
                 + System.getProperty("file.separator"),
                 getCurrentTime() + "-" + System.getProperty("user.name") + ".txt");
@@ -167,41 +166,5 @@ public class Dumper {
             }
         }
         return lines;
-    }
-
-    public static void get(String url) {
-        BufferedReader in = null;
-        InputStreamReader isr = null;
-        try {
-            URL obj = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-
-            connection.setRequestMethod("GET");
-
-            isr = new InputStreamReader(connection.getInputStream());
-            in = new BufferedReader(isr);
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            System.out.println(response.toString());
-        } catch (IOException ignored) {
-        } finally {
-            close(in);
-            close(isr);
-        }
-
-    }
-
-    private static void close(Closeable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

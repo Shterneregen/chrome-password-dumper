@@ -11,7 +11,7 @@ public enum OperatingSystem {
     LINUX(buildPath(".config/google-chrome/"), buildRunningPath()),
     UNKNOWN("", "");
 
-    public static OperatingSystem getOperatingsystem() {
+    public static OperatingSystem getOperatingSystem() {
         final String os = System.getProperty("os.name");
         if (os.contains("Mac")) {
             return MAC;

