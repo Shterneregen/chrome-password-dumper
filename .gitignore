@@ -1,8 +1,8 @@
 # Gradle
 .gradle
-.nb-gradle/
 out/
 .gradle/
+.build/
 
 # IntelliJ project files 
 *.iml
