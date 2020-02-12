@@ -1,3 +1,5 @@
+package random;
+
 import org.junit.Test;
 import random.util.Extractor;
 
@@ -25,7 +27,7 @@ public class TestExtractor {
         System.out.println(Extractor.getConnectedSSID());
     }
 
-    @Test
+//    @Test
     public void testGetBroadcast() {
         System.out.println(Extractor.getBroadcast());
     }

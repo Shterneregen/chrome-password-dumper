@@ -5,8 +5,14 @@ import random.util.Encryption;
 import random.util.Utils;
 
 import java.io.FileReader;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
+
+    private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
     public static void main(final String[] args) {
 
         final String mode = args.length > 0 ? args[0] : "";
@@ -32,7 +38,7 @@ public class Main {
                 Utils.saveToFile(Encryption.decrypt(privateKeyPath, Utils.getStringFromReader(new FileReader(filePath))));
             }
         } catch (Exception e) {
-            System.out.println(e);
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 }

