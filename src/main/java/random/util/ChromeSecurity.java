@@ -24,6 +24,10 @@ public class ChromeSecurity {
     }
 
     public static String getWin32Password(final byte[] encryptedData) {
-        return new String(Crypt32Util.cryptUnprotectData(encryptedData));
+        try {
+            return new String(Crypt32Util.cryptUnprotectData(encryptedData));
+        } catch (Exception e) {
+            return "Could not get password";
+        }
     }
 }

