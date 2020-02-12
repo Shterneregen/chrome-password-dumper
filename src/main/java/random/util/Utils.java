@@ -33,7 +33,7 @@ public class Utils {
         return builder.toString();
     }
 
-    private static String getCurrentTime() {
+    public static String getCurrentTime() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat currentTime = new SimpleDateFormat("dd-MM-yy-HH-mm-ss");
         return currentTime.format(cal.getTime());

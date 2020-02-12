@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Dumper {
@@ -60,12 +59,6 @@ public class Dumper {
         return new Dumper(accounts);
     }
 
-    private static String getCurrentTime() {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("dd-MM-yy-HH-mm-ss");
-        return currentTime.format(cal.getTime());
-    }
-
     private static ChromeAccount[] readDatabase(final File data) throws Exception {
         final ChromeDatabase db = ChromeDatabase.connect(data);
         final ArrayList<ChromeAccount> accounts = db.selectAccounts();
@@ -112,14 +105,13 @@ public class Dumper {
         return profiles.keySet().size();
     }
 
-    public boolean saveToFile(String newFiePath, String pubKeyPath) throws IOException {
+    public void saveAccountsInfoToFile(String newFiePath, String pubKeyPath) throws IOException {
 
-        final List<String> lines = getInfo(false);
+        final List<String> lines = getAccountsInfo(false);
 
-//        final String pathToSave = OperatingSystem.getOperatingSystem().getSavePath();
-        File file = new File((newFiePath != null && !newFiePath.equals("") ? newFiePath : ".")
-                + System.getProperty("file.separator"),
-                getCurrentTime() + "-" + System.getProperty("user.name") + ".txt");
+        String savePath = newFiePath != null && !newFiePath.equals("") ? newFiePath : ".";
+        File file = new File(savePath + System.getProperty("file.separator"),
+                Utils.getCurrentTime() + "-" + System.getProperty("user.name") + ".txt");
 
         if (file.exists()) {
             file.delete();
@@ -133,16 +125,14 @@ public class Dumper {
         } else {
             Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
         }
-
-        return true;
     }
 
-    public void show() {
-        final List<String> lines = getInfo(true);
+    public void showAccountsInfo() {
+        final List<String> lines = getAccountsInfo(true);
         lines.forEach(System.out::println);
     }
 
-    private List<String> getInfo(boolean onlyWithPsw) {
+    private List<String> getAccountsInfo(boolean onlyWithNotEmptyPsw) {
         final List<String> lines = new ArrayList<>();
 
         for (final String name : profiles.keySet()) {
@@ -152,7 +142,7 @@ public class Dumper {
             lines.add("==================================================");
             if (accounts.length > 0) {
                 for (final ChromeAccount account : accounts) {
-                    boolean returnInfo = onlyWithPsw
+                    boolean returnInfo = onlyWithNotEmptyPsw
                             ? !account.getPassword().equals("")
                             : !account.getURL().equals("") || !account.getUsername().equals("") || !account.getPassword().equals("");
                     if (returnInfo) {

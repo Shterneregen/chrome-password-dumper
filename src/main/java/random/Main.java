@@ -20,12 +20,10 @@ public class Main {
         final String key = args.length > 2 ? args[2] : "";
         try {
             final Dumper d = Dumper.dumpAccounts();
-            if (mode.equals("")) {
-                d.saveToFile(newFiePath, key);
-            } else if (mode.equals("-dump")) { // dump
-                d.saveToFile(newFiePath, key);
+            if (mode.equals("-dump") || mode.isEmpty()) { // dump
+                d.saveAccountsInfoToFile(newFiePath, key);
             } else if (mode.equals("-sh")) { // show
-                d.show();
+                d.showAccountsInfo();
             } else if (mode.equals("-g")) { // generate
                 Encryption.saveKeyPairBase64(args.length > 1 ? args[1] : ".\\");
             } else if (mode.equals("-d") && args.length > 2) { // decrypt

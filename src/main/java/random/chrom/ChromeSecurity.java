@@ -1,4 +1,4 @@
-package random.util;
+package random.chrom;
 
 import com.sun.jna.platform.win32.Crypt32Util;
 

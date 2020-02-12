@@ -2,7 +2,6 @@ package random.chrom;
 
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.TransactionMode;
-import random.util.ChromeSecurity;
 import random.util.OperatingSystem;
 
 import java.io.File;
