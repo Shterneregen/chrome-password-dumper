@@ -32,7 +32,7 @@ public class Dumper {
             throw new IOException("Google chrome installation not found.");
         }
 
-        ArrayList<ChromeProfile> chromeProfiles;
+        List<ChromeProfile> chromeProfiles;
         final String[] infoLines = Files.readAllLines(Paths.get(chromeInfo.toURI())).toArray(new String[]{});
         switch (OperatingSystem.getOperatingSystem()) {
             case WINDOWS:
@@ -47,13 +47,13 @@ public class Dumper {
                 throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
         }
 
-        final HashMap<String, ChromeAccount[]> accounts = new HashMap<>();
+        final Map<String, ChromeAccount[]> accounts = new HashMap<>();
         for (final ChromeProfile profile : chromeProfiles) {
             final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
             accounts.put(profile.getName(), Dumper.readDatabase(loginData));
         }
 
-        if (chromeProfiles.size() < 1 || accounts.isEmpty()) {
+        if (chromeProfiles.isEmpty() || accounts.isEmpty()) {
             throw new InstantiationException("No chrome profiles found!");
         }
         return new Dumper(accounts);
@@ -61,23 +61,21 @@ public class Dumper {
 
     private static ChromeAccount[] readDatabase(final File data) throws Exception {
         final ChromeDatabase db = ChromeDatabase.connect(data);
-        final ArrayList<ChromeAccount> accounts = db.selectAccounts();
+        final List<ChromeAccount> accounts = db.selectAccounts();
         db.close();
         return accounts.toArray(new ChromeAccount[]{});
     }
 
-    private static ArrayList<ChromeProfile> readProfiles(String[] infoLines1) {
+    private static List<ChromeProfile> readProfiles(String[] profilesLines) {
         String userName = "\"user_name\":";
         String gaiaName = "\"gaia_name\":";
-        String gaia_given_name = "gaia_given_name";
-        String[] infoLines = infoLines1[0].split(gaia_given_name);
-        final ArrayList<ChromeProfile> profiles = new ArrayList<>();
-        int id = 0;
-        for (String line : infoLines) {
+        String gaiaGivenName = "gaia_given_name";
+        String[] infoLines = profilesLines[0].split(gaiaGivenName);
+        final List<ChromeProfile> profiles = new ArrayList<>();
+
+        for (int i = 1, id = 0; i < infoLines.length; i++, id++) {
+            String line = infoLines[i];
             line = line.trim();
-            if (line.contains(userName)) {
-                id++;
-            }
 
             String gaiaNameVal = "";
             if (line.contains(gaiaName)) {
@@ -88,7 +86,7 @@ public class Dumper {
                 name = getValue(line, userName);
             }
             if (!name.isEmpty()) {
-                profiles.add(new ChromeProfile(id - 1, name, gaiaNameVal));
+                profiles.add(new ChromeProfile(id, name, gaiaNameVal));
             }
         }
         return profiles;
@@ -132,7 +130,7 @@ public class Dumper {
         lines.forEach(System.out::println);
     }
 
-    private List<String> getAccountsInfo(boolean onlyWithNotEmptyPsw) {
+    public List<String> getAccountsInfo(boolean onlyWithNotEmptyPsw) {
         final List<String> lines = new ArrayList<>();
 
         for (final String name : profiles.keySet()) {
