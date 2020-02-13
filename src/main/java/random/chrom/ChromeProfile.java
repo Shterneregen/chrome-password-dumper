@@ -2,28 +2,22 @@ package random.chrom;
 
 public class ChromeProfile {
 
-    private static int profileCount = 0;
-
-    private final int id;
     private final String name;
     private final String gaiaName;
+    private final String profileName;
 
-    public ChromeProfile(final int id, final String name, String gaiaName) {
-        this.id = id;
+    public ChromeProfile(String name, String gaiaName, String profileName) {
         this.name = name;
         this.gaiaName = gaiaName;
-        profileCount++;
+        this.profileName = profileName;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getPath() {
-        if (profileCount == 1) {
-            return "Profile " + id + 1;
-        }
-        return id == 0 ? "Default" : "Profile " + id;
+    public String getProfileName() {
+        return profileName;
     }
 
     public String getGaiaName() {

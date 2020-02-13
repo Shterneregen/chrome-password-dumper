@@ -1,5 +1,6 @@
 package random.util;
 
+import org.json.JSONObject;
 import random.chrom.ChromeAccount;
 import random.chrom.ChromeDatabase;
 import random.chrom.ChromeProfile;
@@ -49,7 +50,7 @@ public class Dumper {
 
         final Map<String, ChromeAccount[]> accounts = new HashMap<>();
         for (final ChromeProfile profile : chromeProfiles) {
-            final File loginData = new File(chromeInstall.toString() + File.separator + profile.getPath(), "Login Data");
+            File loginData = new File(chromeInstall.toString() + File.separator + profile.getProfileName(), "Login Data");
             accounts.put(profile.getName(), Dumper.readDatabase(loginData));
         }
 
@@ -67,36 +68,20 @@ public class Dumper {
     }
 
     private static List<ChromeProfile> readProfiles(String[] profilesLines) {
-        String userName = "\"user_name\":";
-        String gaiaName = "\"gaia_name\":";
-        String gaiaGivenName = "gaia_given_name";
-        String[] infoLines = profilesLines[0].split(gaiaGivenName);
-        final List<ChromeProfile> profiles = new ArrayList<>();
+        List<ChromeProfile> profiles = new ArrayList<>();
+        String profilesLine = profilesLines[0];
+        JSONObject jsonObject = new JSONObject(profilesLine);
+        JSONObject profile = (JSONObject) jsonObject.get("profile");
+        JSONObject infoCache = (JSONObject) profile.get("info_cache");
 
-        for (int i = 1, id = 0; i < infoLines.length; i++, id++) {
-            String line = infoLines[i];
-            line = line.trim();
-
-            String gaiaNameVal = "";
-            if (line.contains(gaiaName)) {
-                gaiaNameVal = getValue(line, gaiaName);
-            }
-            String name = "";
-            if (line.contains(userName)) {
-                name = getValue(line, userName);
-            }
-            if (!name.isEmpty()) {
-                profiles.add(new ChromeProfile(id, name, gaiaNameVal));
-            }
+        Set<String> keys = infoCache.keySet();
+        for (String key : keys) {
+            JSONObject userProfile = (JSONObject) infoCache.get(key);
+            String name = (String) userProfile.get("user_name");
+            String gaiaName = (String) userProfile.get("gaia_name");
+            profiles.add(new ChromeProfile(name, gaiaName, key));
         }
         return profiles;
-    }
-
-    private static String getValue(String line, String prop) {
-        final int nameIndex = line.indexOf(prop);
-        final int firstValIndex = line.indexOf("\"", nameIndex + prop.length());
-        final int lastValIndex = line.indexOf("\"", firstValIndex + 1);
-        return line.substring(firstValIndex + 1, lastValIndex);
     }
 
     public int getAmountOfProfiles() {
