@@ -1,12 +1,12 @@
 package random.chrom;
 
-public class ChromeAccount {
+public class ChromeAccountEntry {
 
     private final String username;
     private final String URL;
     private final String password;
 
-    ChromeAccount(final String username, final String password, final String URL) {
+    ChromeAccountEntry(final String username, final String password, final String URL) {
         this.username = username;
         this.URL = URL;
         this.password = password;

@@ -1,12 +1,17 @@
 package random.chrom;
 
 import com.sun.jna.platform.win32.Crypt32Util;
+import random.util.OperatingSystem;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.ResultSet;
 
 public class ChromeSecurity {
+
+    private ChromeSecurity() {
+    }
 
     public static String getOSXKeychainPasswordAsAdmin(String host) {
         try {
@@ -23,11 +28,26 @@ public class ChromeSecurity {
         }
     }
 
-    public static String getWin32Password(final byte[] encryptedData) {
+    public static String getWin32Password(byte[] encryptedData) {
         try {
             return new String(Crypt32Util.cryptUnprotectData(encryptedData));
         } catch (Exception e) {
-            return "Could not get password";
+            return "";
         }
+    }
+
+    public static String getPassword(ResultSet results) throws Exception {
+        String password;
+        switch (OperatingSystem.getOperatingSystem()) {
+            case WINDOWS:
+                password = getWin32Password(results.getBytes("password_value"));
+                break;
+            case MAC:
+                password = getOSXKeychainPasswordAsAdmin(results.getString("action_url"));
+                break;
+            default:
+                throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
+        }
+        return password;
     }
 }
