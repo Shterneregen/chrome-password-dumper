@@ -6,9 +6,13 @@ import random.util.OperatingSystem;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChromeSecurity {
+    private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 
     private ChromeSecurity() {
     }
@@ -32,22 +36,16 @@ public class ChromeSecurity {
         try {
             return new String(Crypt32Util.cryptUnprotectData(encryptedData));
         } catch (Exception e) {
+            LOG.log(Level.OFF, e.getMessage(), e);
             return "";
         }
     }
 
     public static String getPassword(ResultSet results) throws Exception {
-        String password;
-        switch (OperatingSystem.getOperatingSystem()) {
-            case WINDOWS:
-                password = getWin32Password(results.getBytes("password_value"));
-                break;
-            case MAC:
-                password = getOSXKeychainPasswordAsAdmin(results.getString("action_url"));
-                break;
-            default:
-                throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
-        }
-        return password;
+        return switch (OperatingSystem.getOperatingSystem()) {
+            case WINDOWS -> getWin32Password(results.getBytes("password_value"));
+            case MAC -> getOSXKeychainPasswordAsAdmin(results.getString("action_url"));
+            default -> throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
+        };
     }
 }

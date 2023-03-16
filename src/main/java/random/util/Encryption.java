@@ -5,6 +5,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -16,9 +17,11 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Encryption {
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-    private static String RSA = "RSA";
+public class Encryption {
+    private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    private static final String RSA = "RSA";
 
     private static final String EXT_PUBLIC = "pub";
     private static final String EXT_PRIVATE = "key";
@@ -37,11 +40,11 @@ public class Encryption {
         try {
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            byte[] bytes = plaintext.getBytes("UTF-8");
+            byte[] bytes = plaintext.getBytes(UTF_8);
             byte[] encrypted = blockCipher(bytes, Cipher.ENCRYPT_MODE, cipher);
             return byte2Hex(encrypted);
         } catch (Exception ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
         return "no encrypt result";
     }
@@ -55,10 +58,10 @@ public class Encryption {
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] bts = hex2Byte(encryptedStr.replaceAll("\\s+", ""));
             byte[] decrypted = blockCipher(bts, Cipher.DECRYPT_MODE, cipher);
-            String resStr = new String(decrypted, "UTF-8");
+            String resStr = new String(decrypted, UTF_8);
             return removeTheTrash(resStr);
         } catch (Exception ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
         return "no decrypt result";
     }
@@ -206,13 +209,13 @@ public class Encryption {
             // Store Public Key.
             FileOutputStream fos = new FileOutputStream(path + "key." + EXT_PUBLIC);
 //        fos.write("-----BEGIN RSA PUBLIC KEY-----\n");
-            fos.write(Base64.getEncoder().encodeToString(publicKey.getEncoded()).getBytes("UTF-8"));
+            fos.write(Base64.getEncoder().encodeToString(publicKey.getEncoded()).getBytes(UTF_8));
 //        fos.write("\n-----END RSA PUBLIC KEY-----\n");
             fos.close();
 
             // Store Private Key.
             fos = new FileOutputStream(path + "key." + EXT_PRIVATE);
-            fos.write(Base64.getEncoder().encodeToString(privateKey.getEncoded()).getBytes("UTF-8"));
+            fos.write(Base64.getEncoder().encodeToString(privateKey.getEncoded()).getBytes(UTF_8));
             fos.close();
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();

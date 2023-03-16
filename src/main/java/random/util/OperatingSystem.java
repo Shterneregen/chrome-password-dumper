@@ -24,9 +24,9 @@ public enum OperatingSystem {
         }
     }
 
-    private String path;
+    private final String path;
 
-    private String runningPath;
+    private final String runningPath;
 
     OperatingSystem(final String path, final String runningPath) {
         this.path = path;
@@ -41,8 +41,8 @@ public enum OperatingSystem {
         return runningPath.substring(0, runningPath.lastIndexOf(File.separatorChar) + 1) + "Accounts";
     }
 
-    private static String buildPath(String chromPath) {
-        return System.getProperty("user.home") + File.separator + chromPath;
+    private static String buildPath(String chromePath) {
+        return System.getProperty("user.home") + File.separator + chromePath;
     }
 
     private static String buildRunningPath() {
