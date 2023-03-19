@@ -1,6 +1,6 @@
 package random.util;
 
-import random.chrom.ChromeAccountEntry;
+import random.chrome.ChromeAccountEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,11 +54,18 @@ public class Dumper {
                 for (final ChromeAccountEntry account : profileEntries) {
                     boolean returnInfo = onlyWithNotEmptyPsw
                             ? !account.password().equals("")
-                            : !account.url().equals("") || !account.username().equals("") || !account.password().equals("");
+                            : !account.actionUrl().equals("") || !account.usernameValue().equals("") || !account.password().equals("");
                     if (returnInfo) {
-                        lines.add("Username:\t" + account.username());
-                        lines.add("Password:\t" + account.password());
-                        lines.add("URL:\t\t" + account.url());
+                        lines.add("Username value:\t" + account.usernameValue());
+                        lines.add("Username element:\t" + account.usernameElement());
+                        lines.add("Display name:\t" + account.displayName());
+                        lines.add("Password:\t\t" + account.password());
+                        lines.add("Action URL:\t\t" + account.actionUrl());
+                        lines.add("Origin URL:\t\t" + account.originUrl());
+                        lines.add("date_created:\t\t" + account.dateCreated());
+                        lines.add("date_last_used:\t\t" + account.dateLastUsed());
+                        lines.add("date_password_modified:\t" + account.datePasswordModified());
+                        lines.add("Times used:\t\t" + account.timesUsed());
                         lines.add("");
                     }
                 }

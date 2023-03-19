@@ -1,4 +1,4 @@
-package random.chrom;
+package random.chrome;
 
 import org.sqlite.SQLiteConfig;
 

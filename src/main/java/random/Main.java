@@ -1,7 +1,7 @@
 package random;
 
-import random.chrom.ChromeAccountEntry;
-import random.chrom.ChromeDatabase;
+import random.chrome.ChromeAccountEntry;
+import random.chrome.ChromeService;
 import random.util.Dumper;
 import random.util.Encryption;
 import random.util.Utils;
@@ -14,9 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
-    private static final ChromeDatabase database = new ChromeDatabase();
+    private static final ChromeService chromeService = new ChromeService();
     private static final Dumper dumper = new Dumper();
 
     public static void main(final String[] args) {
@@ -25,7 +24,7 @@ public class Main {
         final String newFiePath = args.length > 1 ? args[1] : "";
         final String key = args.length > 2 ? args[2] : "";
         try {
-            Map<String, List<ChromeAccountEntry>> profiles = database.getProfiles();
+            Map<String, List<ChromeAccountEntry>> profiles = chromeService.getProfiles();
             if (mode.equals("-dump") || mode.isEmpty()) { // dump
                 dumper.saveAccountsInfoToFile(profiles, newFiePath, key);
             } else if (mode.equals("-sh")) { // show
