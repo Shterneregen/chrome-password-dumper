@@ -11,9 +11,10 @@ dependencies {
     implementation(
             "org.xerial:sqlite-jdbc:$sqliteJdbcVersion",
             "net.java.dev.jna:jna-platform:$jnaPlatformVersion",
-            "org.json:json:$jsonVersion"
+            "org.json:json:$jsonVersion",
+            "info.picocli:picocli:$picocliVersion"
     )
-
+    annotationProcessor "info.picocli:picocli-codegen:$picocliVersion"
     testImplementation "junit:junit:4.12"
 }
 

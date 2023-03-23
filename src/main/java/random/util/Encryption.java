@@ -44,7 +44,7 @@ public class Encryption {
             byte[] encrypted = blockCipher(bytes, Cipher.ENCRYPT_MODE, cipher);
             return byte2Hex(encrypted);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
         return "no encrypt result";
     }
@@ -61,7 +61,7 @@ public class Encryption {
             String resStr = new String(decrypted, UTF_8);
             return removeTheTrash(resStr);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
         return "no decrypt result";
     }
@@ -197,8 +197,10 @@ public class Encryption {
     //</editor-fold>
 
     //<editor-fold desc="I/O">
-    public static void saveKeyPairBase64(String path) {
-        try {
+    public static void saveKeyPairBase64(String keysName, String keysPath) {
+        try(FileOutputStream pubStream = new FileOutputStream("%s%s.%s".formatted(keysPath, keysName, EXT_PUBLIC));
+            FileOutputStream pkStream = new FileOutputStream("%s%s.%s".formatted(keysPath, keysName, EXT_PRIVATE))
+        ) {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(RSA);
             kpg.initialize(1024);
             KeyPair keyPair = kpg.generateKeyPair();
@@ -206,19 +208,15 @@ public class Encryption {
             PrivateKey privateKey = keyPair.getPrivate();
             PublicKey publicKey = keyPair.getPublic();
 
-            // Store Public Key.
-            FileOutputStream fos = new FileOutputStream(path + "key." + EXT_PUBLIC);
-//        fos.write("-----BEGIN RSA PUBLIC KEY-----\n");
-            fos.write(Base64.getEncoder().encodeToString(publicKey.getEncoded()).getBytes(UTF_8));
-//        fos.write("\n-----END RSA PUBLIC KEY-----\n");
-            fos.close();
+            // Save Public Key
+            // pubStream.write("-----BEGIN RSA PUBLIC KEY-----\n".getBytes());
+            pubStream.write(Base64.getEncoder().encodeToString(publicKey.getEncoded()).getBytes(UTF_8));
+            // pubStream.write("\n-----END RSA PUBLIC KEY-----\n".getBytes());
 
-            // Store Private Key.
-            fos = new FileOutputStream(path + "key." + EXT_PRIVATE);
-            fos.write(Base64.getEncoder().encodeToString(privateKey.getEncoded()).getBytes(UTF_8));
-            fos.close();
+            // Save Private Key
+            pkStream.write(Base64.getEncoder().encodeToString(privateKey.getEncoded()).getBytes(UTF_8));
         } catch (NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 

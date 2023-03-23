@@ -31,7 +31,7 @@ public class ChromeService {
     public Map<String, List<ChromeAccountEntry>> getProfiles() throws Exception {
         Path chromeInstallPath = getChromeInstallPath();
 
-        File chromeInfo = getLocalStateFile(getChromeInstallPath());
+        File chromeInfo = getLocalStateFile(chromeInstallPath);
         final String[] infoLines = Files.readAllLines(Paths.get(chromeInfo.toURI())).toArray(new String[]{});
 
         String jsonProfileString = switch (OperatingSystem.getOperatingSystem()) {
@@ -41,13 +41,10 @@ public class ChromeService {
         };
 
         JSONObject rootJson = new JSONObject(jsonProfileString);
-        JSONObject infoCache = rootJson
-                .getJSONObject("profile")
-                .getJSONObject("info_cache");
-
         String encryptedMasterKeyWithPrefixB64 = rootJson.getJSONObject("os_crypt").getString("encrypted_key");
         byte[] masterKey = ChromeSecurity.getMasterKey(encryptedMasterKeyWithPrefixB64);
 
+        JSONObject infoCache = rootJson.getJSONObject("profile").getJSONObject("info_cache");
         return infoCache.keySet().stream()
                 .map(profileName -> {
                     JSONObject userProfile = infoCache.getJSONObject(profileName);
@@ -68,25 +65,21 @@ public class ChromeService {
             }
             List<ChromeAccountEntry> accounts = new ArrayList<>();
             while (resultSet.next()) {
-                try {
-                    String usernameElement = resultSet.getString("username_element");
-                    String usernameValue = resultSet.getString("username_value");
-                    String displayName = resultSet.getString("display_name");
-                    String password = ChromeSecurity.decryptChromeSecret(resultSet.getBytes("password_value"), masterKey);
-                    String actionUrl = resultSet.getString("action_url");
-                    String originUrl = resultSet.getString("origin_url");
-                    String dateCreated = resultSet.getString("date_created");
-                    String dateLastUse = resultSet.getString("date_last_used");
-                    String datePasswordModified = resultSet.getString("date_password_modified");
-                    Integer timesUsed = resultSet.getInt("times_used");
-                    ChromeAccountEntry chromeAccount = new ChromeAccountEntry(usernameValue, usernameElement, displayName,
-                            password, actionUrl, originUrl,
-                            dateCreated, dateLastUse, datePasswordModified, timesUsed);
+                String usernameElement = resultSet.getString("username_element");
+                String usernameValue = resultSet.getString("username_value");
+                String displayName = resultSet.getString("display_name");
+                String password = ChromeSecurity.decryptChromeSecret(resultSet.getBytes("password_value"), masterKey);
+                String actionUrl = resultSet.getString("action_url");
+                String originUrl = resultSet.getString("origin_url");
+                String dateCreated = resultSet.getString("date_created");
+                String dateLastUse = resultSet.getString("date_last_used");
+                String datePasswordModified = resultSet.getString("date_password_modified");
+                Integer timesUsed = resultSet.getInt("times_used");
+                ChromeAccountEntry chromeAccount = new ChromeAccountEntry(usernameValue, usernameElement, displayName,
+                        password, actionUrl, originUrl,
+                        dateCreated, dateLastUse, datePasswordModified, timesUsed);
 
-                    accounts.add(chromeAccount);
-                } catch (Exception e) {
-                    LOG.log(Level.SEVERE, e.getMessage(), e);
-                }
+                accounts.add(chromeAccount);
             }
             return accounts;
         } catch (Exception e) {
@@ -111,7 +104,7 @@ public class ChromeService {
         return new File(chromeInstallPath + File.separator + profileName, "Login Data");
     }
 
-    private File getLocalStateFile(Path chromeInstallPath) throws Exception {
+    private File getLocalStateFile(Path chromeInstallPath) {
         return new File(chromeInstallPath.toString(), "Local State");
     }
 }

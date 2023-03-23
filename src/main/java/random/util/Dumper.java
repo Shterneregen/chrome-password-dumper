@@ -56,7 +56,7 @@ public class Dumper {
                             ? !account.password().equals("")
                             : !account.actionUrl().equals("") || !account.usernameValue().equals("") || !account.password().equals("");
                     if (returnInfo) {
-                        lines.add("Username value:\t" + account.usernameValue());
+                        lines.add("Username value:\t\t" + account.usernameValue());
                         lines.add("Username element:\t" + account.usernameElement());
                         lines.add("Display name:\t" + account.displayName());
                         lines.add("Password:\t\t" + account.password());
