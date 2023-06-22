@@ -15,7 +15,7 @@ dependencies {
             "info.picocli:picocli:$picocliVersion"
     )
     annotationProcessor "info.picocli:picocli-codegen:$picocliVersion"
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:$junitVersion"
 }
 
 application {
