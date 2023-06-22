@@ -40,7 +40,7 @@ public class ChromeSecurity {
         try {
             return new String(Crypt32Util.cryptUnprotectData(encryptedData));
         } catch (Exception e) {
-            LOG.log(Level.OFF, e.getMessage(), e);
+            LOG.log(Level.SEVERE, e.getMessage(), e);
             return "";
         }
     }
