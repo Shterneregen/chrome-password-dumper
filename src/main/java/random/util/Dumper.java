@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
+
 public class Dumper {
 
     public void saveAccountsInfoToFile(Map<String, List<ChromeAccountEntry>> profiles,
@@ -42,34 +44,54 @@ public class Dumper {
     }
 
     public List<String> getAccountsInfo(Map<String, List<ChromeAccountEntry>> profiles, boolean onlyWithNotEmptyPsw) {
-        final List<String> lines = new ArrayList<>();
+        TableGenerator tableGenerator = new TableGenerator();
+        List<String> headersList = new ArrayList<>();
+        headersList.add("#");
+        headersList.add("Username");
+        headersList.add("Element");
+        headersList.add("Display name");
+        headersList.add("Password");
+        headersList.add("date_created");
+        headersList.add("date_last_used");
+        headersList.add("date_password_modified");
+        headersList.add("Times used");
+        headersList.add("Action URL");
+        headersList.add("Origin URL");
 
+        final List<String> lines = new ArrayList<>();
         for (Map.Entry<String, List<ChromeAccountEntry>> profile : profiles.entrySet()) {
             String profileName = profile.getKey();
-            lines.add("==================================================");
-            lines.add(profileName);
-            lines.add("==================================================");
             List<ChromeAccountEntry> profileEntries = profile.getValue();
+            lines.add("==================================================");
+            lines.add("%s (%d)".formatted(profileName, profileEntries.size()));
+            lines.add("==================================================");
+
             if (profileEntries.size() > 0) {
+                int counter = 0;
+                List<List<String>> rowsList = new ArrayList<>();
+
                 for (final ChromeAccountEntry account : profileEntries) {
                     boolean returnInfo = onlyWithNotEmptyPsw
                             ? !account.password().equals("")
                             : !account.actionUrl().equals("") || !account.usernameValue().equals("") || !account.password().equals("");
+
                     if (returnInfo) {
-                        lines.add("Username value:\t\t" + account.usernameValue());
-                        lines.add("Username element:\t" + account.usernameElement());
-                        lines.add("Display name:\t" + account.displayName());
-                        lines.add("Password:\t\t" + account.password());
-                        lines.add("Action URL:\t\t" + account.actionUrl());
-                        lines.add("Origin URL:\t\t" + account.originUrl());
-                        lines.add("date_created:\t\t" + account.dateCreated());
-                        lines.add("date_last_used:\t\t" + account.dateLastUsed());
-                        lines.add("date_password_modified:\t" + account.datePasswordModified());
-                        lines.add("Times used:\t\t" + account.timesUsed());
-                        lines.add("");
+                        List<String> row = new ArrayList<>();
+                        row.add(String.valueOf(++counter));
+                        row.add(account.usernameValue());
+                        row.add(account.usernameElement());
+                        row.add(account.displayName());
+                        row.add(account.password());
+                        row.add(account.dateCreated());
+                        row.add(account.dateLastUsed());
+                        row.add(account.datePasswordModified());
+                        row.add(ofNullable(account.timesUsed()).map(Object::toString).orElse(null));
+                        row.add(account.actionUrl());
+                        row.add(account.originUrl());
+                        rowsList.add(row);
                     }
                 }
-                lines.remove(lines.size() - 1);
+                lines.add(tableGenerator.generateTable(headersList, rowsList));
             }
         }
         return lines;
