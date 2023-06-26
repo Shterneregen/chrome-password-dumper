@@ -20,7 +20,7 @@ public class SqliteDB {
             SQLiteConfig config = new SQLiteConfig();
             config.setReadOnly(true);
             config.setTransactionMode(SQLiteConfig.TransactionMode.EXCLUSIVE);
-            Connection connection = config.createConnection("jdbc:sqlite:" + tempDbPath);
+            Connection connection = config.createConnection("jdbc:sqlite:%s".formatted(tempDbPath));
             connection.setAutoCommit(true);
             return connection;
         } catch (final IOException e) {

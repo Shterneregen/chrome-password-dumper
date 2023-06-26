@@ -1,4 +1,4 @@
 package random.chrome;
 
-public record ChromeProfile(String name, String gaiaName, String profileName) {
+public record ChromeProfile(String userName, String gaiaName, String profileName) {
 }

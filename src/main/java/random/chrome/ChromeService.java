@@ -21,14 +21,9 @@ import java.util.stream.Collectors;
 
 public class ChromeService {
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    private static final SqliteDB sqliteDB = new SqliteDB();
 
-    private final SqliteDB sqliteDB;
-
-    public ChromeService() {
-        sqliteDB = new SqliteDB();
-    }
-
-    public Map<String, List<ChromeAccountEntry>> getProfiles() throws Exception {
+    public Map<String, List<ChromeAccount>> getProfiles() throws Exception {
         Path chromeInstallPath = getChromeInstallPath();
 
         File chromeInfo = getLocalStateFile(chromeInstallPath);
@@ -37,7 +32,7 @@ public class ChromeService {
         String jsonProfileString = switch (OperatingSystem.getOperatingSystem()) {
             case WINDOWS -> infoLines[0];
             case MAC -> infoLines[0].split("\\{|\\}")[0];
-            default -> throw new Exception(System.getProperty("os.name") + " is not supported by this application!");
+            default -> throw new Exception("%s is not supported by this application!".formatted(System.getProperty("os.name")));
         };
 
         JSONObject rootJson = new JSONObject(jsonProfileString);
@@ -48,38 +43,36 @@ public class ChromeService {
         return infoCache.keySet().stream()
                 .map(profileName -> {
                     JSONObject userProfile = infoCache.getJSONObject(profileName);
-                    String name = userProfile.getString("user_name");
+                    String userName = userProfile.getString("user_name");
                     String gaiaName = userProfile.getString("gaia_name");
-                    return new ChromeProfile(name, gaiaName, profileName);
-                }).collect(Collectors.toMap(ChromeProfile::name, profile -> {
+                    return new ChromeProfile(userName, gaiaName, profileName);
+                }).collect(Collectors.toMap(ChromeProfile::userName, profile -> {
                     File loginDataFile = getLoginDataFile(chromeInstallPath, profile.profileName());
                     return getChromeAccountsFromDatabaseFile(loginDataFile, masterKey);
                 }));
     }
 
-    private List<ChromeAccountEntry> getChromeAccountsFromDatabaseFile(File dbFile, byte[] masterKey) {
+    private List<ChromeAccount> getChromeAccountsFromDatabaseFile(File dbFile, byte[] masterKey) {
         try (Connection connection = sqliteDB.connectToTempDB(dbFile, "CHROME_LOGIN_");
-             ResultSet resultSet = connection.createStatement().executeQuery(ChromeAccountEntry.LOGIN_QUERY)) {
+             ResultSet rs = connection.createStatement().executeQuery(ChromeAccount.LOGIN_QUERY)) {
             if (connection.isClosed()) {
                 throw new IOException("Connection to database has been terminated! Cannot fetch accounts.");
             }
-            List<ChromeAccountEntry> accounts = new ArrayList<>();
-            while (resultSet.next()) {
-                String usernameElement = resultSet.getString("username_element");
-                String usernameValue = resultSet.getString("username_value");
-                String displayName = resultSet.getString("display_name");
-                String password = ChromeSecurity.decryptChromeSecret(resultSet.getBytes("password_value"), masterKey);
-                String actionUrl = resultSet.getString("action_url");
-                String originUrl = resultSet.getString("origin_url");
-                String dateCreated = resultSet.getString("date_created");
-                String dateLastUse = resultSet.getString("date_last_used");
-                String datePasswordModified = resultSet.getString("date_password_modified");
-                Integer timesUsed = resultSet.getInt("times_used");
-                ChromeAccountEntry chromeAccount = new ChromeAccountEntry(usernameValue, usernameElement, displayName,
-                        password, actionUrl, originUrl,
-                        dateCreated, dateLastUse, datePasswordModified, timesUsed);
-
-                accounts.add(chromeAccount);
+            List<ChromeAccount> accounts = new ArrayList<>();
+            while (rs.next()) {
+                ChromeAccount account = new ChromeAccount(
+                        rs.getString("username_value"),
+                        rs.getString("username_element"),
+                        rs.getString("display_name"),
+                        ChromeSecurity.decryptChromeSecret(rs.getBytes("password_value"), masterKey),
+                        rs.getString("action_url"),
+                        rs.getString("origin_url"),
+                        rs.getString("date_created"),
+                        rs.getString("date_last_used"),
+                        rs.getString("date_password_modified"),
+                        rs.getInt("times_used")
+                );
+                accounts.add(account);
             }
             return accounts;
         } catch (Exception e) {

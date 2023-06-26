@@ -6,17 +6,13 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Spec;
-import random.chrome.ChromeAccountEntry;
-import random.chrome.ChromeService;
-import random.util.Dumper;
+import random.util.AccountService;
 import random.util.Encryption;
 import random.util.Utils;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,8 +25,7 @@ import java.util.logging.Logger;
 })
 public class Main implements Runnable {
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
-    private static final ChromeService chromeService = new ChromeService();
-    private static final Dumper dumper = new Dumper();
+    private static final AccountService accountService = new AccountService();
 
     @Spec
     CommandSpec spec;
@@ -40,42 +35,32 @@ public class Main implements Runnable {
         throw new ParameterException(spec.commandLine(), "Missing required subcommand");
     }
 
-    @Command(name = "show")
+    @Command(name = "show", description = "Show passwords")
     static class Show implements Runnable {
         @Override
         public void run() {
-            try {
-                Map<String, List<ChromeAccountEntry>> profiles = chromeService.getProfiles();
-                dumper.showAccountsInfo(profiles);
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, e.getMessage(), e);
-            }
+            accountService.showAccountsInfo();
         }
     }
 
-    @Command(name = "dump")
+    @Command(name = "dump", description = "Dump passwords")
     static class Dump implements Runnable {
-        @Option(names = "--pub")
+        @Option(names = "--pub", description = "Path to public key to encrypt file")
         String pubKeyPath;
-        @Option(names = "--file")
+        @Option(names = "--path", description = "Path to save file with passwords")
         String filePath;
 
         @Override
         public void run() {
-            try {
-                Map<String, List<ChromeAccountEntry>> profiles = chromeService.getProfiles();
-                dumper.saveAccountsInfoToFile(profiles, filePath, pubKeyPath);
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, e.getMessage(), e);
-            }
+            accountService.saveAccountsInfoToFile(filePath, pubKeyPath);
         }
     }
 
-    @Command(name = "keys")
+    @Command(name = "keys", description = "Generate new keypair")
     static class GenerateKeyPair implements Runnable {
-        @Option(names = "--name")
+        @Option(names = "--name", description = "Name of new keypair")
         String keysName;
-        @Option(names = "--path")
+        @Option(names = "--path", description = "Path to save new keypair")
         String keysPath;
 
         @Override
@@ -87,11 +72,11 @@ public class Main implements Runnable {
         }
     }
 
-    @Command(name = "decrypt-str")
+    @Command(name = "decrypt-str", description = "Decrypt string")
     static class DecryptString implements Runnable {
-        @Option(names = "--pk", required = true)
+        @Option(names = "--pk", required = true, description = "Path to private key")
         String privateKeyPath;
-        @Option(names = "--str", required = true)
+        @Option(names = "--str", required = true, description = "Encrypted string")
         String encryptedStr;
 
         @Override
@@ -100,11 +85,11 @@ public class Main implements Runnable {
         }
     }
 
-    @Command(name = "decrypt-file")
+    @Command(name = "decrypt-file", description = "Decrypt file")
     static class DecryptFile implements Runnable {
-        @Option(names = "--pk", required = true)
+        @Option(names = "--pk", required = true, description = "Path to private key")
         String privateKeyPath;
-        @Option(names = "--file", required = true)
+        @Option(names = "--file", required = true, description = "Path ot encrypted file")
         String filePath;
 
         @Override

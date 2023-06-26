@@ -24,17 +24,17 @@ public enum OperatingSystem {
         }
     }
 
-    private final String path;
+    private final String chromePath;
 
     private final String runningPath;
 
-    OperatingSystem(final String path, final String runningPath) {
-        this.path = path;
+    OperatingSystem(final String chromePath, final String runningPath) {
+        this.chromePath = chromePath;
         this.runningPath = runningPath;
     }
 
     public String getChromePath() {
-        return path;
+        return chromePath;
     }
 
     public String getSavePath() {

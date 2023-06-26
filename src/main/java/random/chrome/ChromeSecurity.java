@@ -80,7 +80,7 @@ public class ChromeSecurity {
     }
 
     public static byte[] getMasterKey(String encryptedMasterKeyWithPrefixB64) {
-        // Remove praefix (DPAPI)
+        // Remove prefix (DPAPI)
         byte[] encryptedMasterKeyWithPrefix = Base64.getDecoder().decode(encryptedMasterKeyWithPrefixB64);
         byte[] encryptedMasterKey = Arrays.copyOfRange(encryptedMasterKeyWithPrefix, 5, encryptedMasterKeyWithPrefix.length);
         return Crypt32Util.cryptUnprotectData(encryptedMasterKey);
