@@ -32,7 +32,8 @@ public class ChromeService {
         String jsonProfileString = switch (OperatingSystem.getOperatingSystem()) {
             case WINDOWS -> infoLines[0];
             case MAC -> infoLines[0].split("\\{|\\}")[0];
-            default -> throw new Exception("%s is not supported by this application!".formatted(System.getProperty("os.name")));
+            default ->
+                    throw new Exception("%s is not supported by this application!".formatted(System.getProperty("os.name")));
         };
 
         JSONObject rootJson = new JSONObject(jsonProfileString);
@@ -53,7 +54,7 @@ public class ChromeService {
     }
 
     private List<ChromeAccount> getChromeAccountsFromDatabaseFile(File dbFile, byte[] masterKey) {
-        try (Connection connection = sqliteDB.connectToTempDB(dbFile, "CHROME_LOGIN_");
+        try (Connection connection = sqliteDB.connectToTempDB(dbFile);
              ResultSet rs = connection.createStatement().executeQuery(ChromeAccount.LOGIN_QUERY)) {
             if (connection.isClosed()) {
                 throw new IOException("Connection to database has been terminated! Cannot fetch accounts.");

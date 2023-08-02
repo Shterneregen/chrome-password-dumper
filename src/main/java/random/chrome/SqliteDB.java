@@ -10,12 +10,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class SqliteDB {
 
-    public Connection connectToTempDB(File dbFile, String tempDbName) throws IOException {
+    public Connection connectToTempDB(File dbFile) throws IOException {
         try {
-            Path tempDbPath = makeDbCopy(dbFile, tempDbName);
+            Path tempDbPath = makeDbCopy(dbFile);
 
             SQLiteConfig config = new SQLiteConfig();
             config.setReadOnly(true);
@@ -30,12 +31,12 @@ public class SqliteDB {
         }
     }
 
-    private Path makeDbCopy(File dbFile, String tempDbName) throws IOException {
-        Path tempDB = Files.createTempFile(tempDbName, null);
-        FileOutputStream out = new FileOutputStream(tempDB.toFile());
-        Files.copy(Paths.get(dbFile.getPath()), out);
-        out.close();
+    private Path makeDbCopy(File dbFile) throws IOException {
+        Path tempDB = Files.createTempFile(UUID.randomUUID().toString(), null);
         tempDB.toFile().deleteOnExit();
+        try (FileOutputStream out = new FileOutputStream(tempDB.toFile())) {
+            Files.copy(Paths.get(dbFile.getPath()), out);
+        }
         return tempDB;
     }
 }
