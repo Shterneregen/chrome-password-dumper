@@ -1,4 +1,4 @@
-package random.util;
+package random.services;
 
 import random.chrome.ChromeService;
 

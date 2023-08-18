@@ -1,4 +1,4 @@
-package random.chrome;
+package random.db;
 
 import org.sqlite.SQLiteConfig;
 
@@ -12,7 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class SqliteDB {
+public class SqliteService {
 
     public Connection connectToTempDB(File dbFile) throws IOException {
         try {

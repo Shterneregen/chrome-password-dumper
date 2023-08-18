@@ -6,15 +6,18 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Spec;
-import random.util.AccountService;
-import random.util.Encryption;
-import random.util.Utils;
+import random.services.AccountService;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static random.services.EncryptionService.decrypt;
+import static random.services.EncryptionService.saveKeyPairBase64;
+import static random.util.Utils.getStringFromReader;
+import static random.util.Utils.saveToFile;
 
 @Command(name = "", subcommands = {
         Main.Dump.class,
@@ -65,7 +68,7 @@ public class Main implements Runnable {
 
         @Override
         public void run() {
-            Encryption.saveKeyPairBase64(
+            saveKeyPairBase64(
                     keysName == null ? "key" : keysName,
                     keysPath == null ? ".\\" : keysPath
             );
@@ -81,7 +84,7 @@ public class Main implements Runnable {
 
         @Override
         public void run() {
-            System.out.println(Encryption.decrypt(privateKeyPath, encryptedStr));
+            System.out.println(decrypt(privateKeyPath, encryptedStr));
         }
     }
 
@@ -95,7 +98,7 @@ public class Main implements Runnable {
         @Override
         public void run() {
             try {
-                Utils.saveToFile(Encryption.decrypt(privateKeyPath, Utils.getStringFromReader(new FileReader(filePath))));
+                saveToFile(decrypt(privateKeyPath, getStringFromReader(new FileReader(filePath))));
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, e.getMessage(), e);
             }

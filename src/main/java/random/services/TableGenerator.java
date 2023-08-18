@@ -1,4 +1,4 @@
-package random.util;
+package random.services;
 
 import java.util.HashMap;
 import java.util.List;

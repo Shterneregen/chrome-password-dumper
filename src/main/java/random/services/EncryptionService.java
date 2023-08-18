@@ -1,4 +1,4 @@
-package random.util;
+package random.services;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class Encryption {
+public class EncryptionService {
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     private static final String RSA = "RSA";
 
@@ -30,8 +30,8 @@ public class Encryption {
     static String encrypt(String pubKeyPath, String originalStr) {
         try {
             return encrypt(originalStr, loadPublic(pubKeyPath));
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
         return "";
     }
@@ -71,7 +71,7 @@ public class Encryption {
     private static byte[] blockCipher(byte[] bytes, int mode, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
         // string initialize 2 buffers.
         // scrambled will hold intermediate results
-        byte[] scrambled = new byte[0];
+        byte[] scrambled;
 
         // toReturn will hold the total result
         byte[] toReturn = new byte[0];
@@ -92,7 +92,7 @@ public class Encryption {
                 // here we calculate the length of the next buffer required
                 int newlength = length;
 
-                // if newlength would be longer than remaining bytes in the bytes array we shorten it.
+                // if new length would be longer than remaining bytes in the bytes array we shorten it.
                 if (i + length > bytes.length) {
                     newlength = bytes.length - i;
                 }
@@ -115,16 +115,12 @@ public class Encryption {
 
     private static byte[] append(byte[] prefix, byte[] suffix) {
         byte[] toReturn = new byte[prefix.length + suffix.length];
-        for (int i = 0; i < prefix.length; i++) {
-            toReturn[i] = prefix[i];
-        }
-        for (int i = 0; i < suffix.length; i++) {
-            toReturn[i + prefix.length] = suffix[i];
-        }
+        System.arraycopy(prefix, 0, toReturn, 0, prefix.length);
+        System.arraycopy(suffix, 0, toReturn, prefix.length, suffix.length);
         return toReturn;
     }
 
-    private static String byte2Hex(byte b[]) {
+    private static String byte2Hex(byte[] b) {
         StringBuilder hs = new StringBuilder();
         String stmp;
         for (byte aB : b) {
@@ -156,8 +152,6 @@ public class Encryption {
             k += (a2 - 97) + 10;
         } else if (a2 >= 'A' && a2 <= 'F') {
             k += (a2 - 65) + 10;
-        } else {
-            k += 0;
         }
         return (byte) (k & 0xff);
     }
@@ -167,7 +161,7 @@ public class Encryption {
         if (len % 2 != 0) {
             return null;
         }
-        byte r[] = new byte[len / 2];
+        byte[] r = new byte[len / 2];
         int k = 0;
         for (int i = 0; i < str.length() - 1; i += 2) {
             r[k] = hex2Byte(str.charAt(i), str.charAt(i + 1));

@@ -24,7 +24,7 @@ public class Utils {
         char[] buffer = new char[BUFFER_SIZE];
         Reader bufferedReader = new BufferedReader(reader, BUFFER_SIZE);
         StringBuilder builder = new StringBuilder();
-        int length = 0;
+        int length;
         while ((length = bufferedReader.read(buffer, 0, BUFFER_SIZE)) != -1) {
             builder.append(buffer, 0, length);
         }

@@ -1,7 +1,6 @@
-package random;
+package random.services;
 
 import org.junit.jupiter.api.Test;
-import random.services.WinWiFiService;
 
 import java.util.stream.Stream;
 

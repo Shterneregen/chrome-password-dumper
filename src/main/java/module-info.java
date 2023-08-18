@@ -11,5 +11,6 @@ module random {
     exports random.util;
     exports random.chrome;
     opens random;
+    exports random.db;
     exports random.services;
 }

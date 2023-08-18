@@ -1,17 +1,19 @@
-package random.util;
+package random.services;
 
 import random.chrome.ChromeAccount;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static random.services.EncryptionService.encrypt;
+import static random.util.Utils.getCurrentTime;
 
 public class AccountFormatterService {
     private static final TableGenerator tableGenerator = new TableGenerator();
@@ -32,11 +34,11 @@ public class AccountFormatterService {
     public void saveAccountsInfoToFile(Map<String, List<ChromeAccount>> profiles,
                                        String newFiePath, String pubKeyPath) throws IOException {
 
-        final List<String> lines = getAccountsInfo(profiles);
+        final List<String> accountsInfo = getAccountsInfo(profiles);
 
         String savePath = newFiePath != null && !newFiePath.equals("") ? newFiePath : ".";
         File file = new File(savePath + System.getProperty("file.separator"),
-                "%s-%s.txt".formatted(Utils.getCurrentTime(), System.getProperty("user.name")));
+                "%s-%s.txt".formatted(getCurrentTime(), System.getProperty("user.name")));
 
         if (file.exists()) {
             file.delete();
@@ -44,17 +46,14 @@ public class AccountFormatterService {
         file.getParentFile().mkdirs();
         file.createNewFile();
 
-        if (pubKeyPath != null && !pubKeyPath.isEmpty()) {
-            String encoded = Encryption.encrypt(pubKeyPath, lines.toString());
-            Files.write(file.toPath(), Collections.singletonList(encoded), StandardCharsets.UTF_8);
-        } else {
-            Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
-        }
+        List<String> lines = pubKeyPath != null && !pubKeyPath.isEmpty()
+                ? List.of(encrypt(pubKeyPath, accountsInfo.toString()))
+                : accountsInfo;
+        Files.write(file.toPath(), lines, UTF_8);
     }
 
     public void showAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
-        List<String> lines = getAccountsInfo(profiles);
-        lines.forEach(System.out::println);
+        getAccountsInfo(profiles).forEach(System.out::println);
     }
 
     private List<String> getAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
