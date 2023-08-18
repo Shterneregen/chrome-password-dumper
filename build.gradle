@@ -17,7 +17,13 @@ dependencies {
             "info.picocli:picocli:$picocliVersion"
     )
     annotationProcessor "info.picocli:picocli-codegen:$picocliVersion"
-    testImplementation "junit:junit:$junitVersion"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiterVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 application {
