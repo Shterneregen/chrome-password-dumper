@@ -2,14 +2,15 @@ package random.services;
 
 import random.chrome.ChromeAccount;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Comparator.comparing;
@@ -32,6 +33,10 @@ public class AccountFormatterService {
             "Action URL",
             "Origin URL"
     );
+
+    static {
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, UTF_8));
+    }
 
     public void saveAccountsInfoToFile(Map<String, List<ChromeAccount>> profiles,
                                        String newFiePath, String pubKeyPath) throws IOException {
@@ -90,26 +95,17 @@ public class AccountFormatterService {
     }
 
     private List<String> getShortAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
+        int maxUserNameLen = getMaxLen(profiles, ChromeAccount::usernameValue);
+        int maxPswLen = getMaxLen(profiles, ChromeAccount::password);
+        String pattern = "%-3d | %-" + maxUserNameLen + "s | %-" + maxPswLen + "s | %s";
+
         final List<String> lines = new ArrayList<>();
         for (Entry<String, List<ChromeAccount>> profile : profiles.entrySet()) {
             lines.add("==================================================");
             lines.add(profile.getKey());
             lines.add("==================================================");
 
-            int maxUserNameLen = profile.getValue().stream()
-                    .map(ChromeAccount::usernameValue)
-                    .map(String::length)
-                    .max(naturalOrder())
-                    .orElse(0);
-
-            int maxPswLen = profile.getValue().stream()
-                    .map(ChromeAccount::password)
-                    .map(String::length)
-                    .max(naturalOrder())
-                    .orElse(0);
-
             AtomicInteger counter = new AtomicInteger();
-            String pattern = "%-3d | %-" + maxUserNameLen + "s | %-" + maxPswLen + "s | %s";
 
             List<String> data = profile.getValue().stream()
                     .filter(acc -> !acc.usernameValue().isBlank() || !acc.password().isBlank())
@@ -124,5 +120,14 @@ public class AccountFormatterService {
             lines.addAll(data);
         }
         return lines;
+    }
+
+    private static Integer getMaxLen(Map<String, List<ChromeAccount>> profiles,
+                                     Function<ChromeAccount, String> mapper) {
+        return profiles.values().stream().flatMap(Collection::stream)
+                .map(mapper)
+                .map(String::length)
+                .max(naturalOrder())
+                .orElse(0);
     }
 }
