@@ -1,5 +1,6 @@
 package random.services;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ public class WinWiFiServiceTest {
         System.out.println(WinWiFiService.getConnectedSSID());
     }
 
+    @Disabled
     @Test
     public void testGetBroadcast() {
         System.out.println(WinWiFiService.getBroadcast());

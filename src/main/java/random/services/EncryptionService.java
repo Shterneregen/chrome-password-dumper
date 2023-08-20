@@ -14,10 +14,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.SEVERE;
 
 public class EncryptionService {
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -31,7 +31,7 @@ public class EncryptionService {
         try {
             return encrypt(originalStr, loadPublic(pubKeyPath));
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            LOG.log(SEVERE, ex.getMessage(), ex);
         }
         return "";
     }
@@ -44,7 +44,7 @@ public class EncryptionService {
             byte[] encrypted = blockCipher(bytes, Cipher.ENCRYPT_MODE, cipher);
             return byte2Hex(encrypted);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            LOG.log(SEVERE, ex.getMessage(), ex);
         }
         return "no encrypt result";
     }
@@ -61,7 +61,7 @@ public class EncryptionService {
             String resStr = new String(decrypted, UTF_8);
             return removeTheTrash(resStr);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            LOG.log(SEVERE, ex.getMessage(), ex);
         }
         return "no decrypt result";
     }
@@ -191,9 +191,9 @@ public class EncryptionService {
     //</editor-fold>
 
     //<editor-fold desc="I/O">
-    public static void saveKeyPairBase64(String keysName, String keysPath) {
-        try(FileOutputStream pubStream = new FileOutputStream("%s%s.%s".formatted(keysPath, keysName, EXT_PUBLIC));
-            FileOutputStream pkStream = new FileOutputStream("%s%s.%s".formatted(keysPath, keysName, EXT_PRIVATE))
+    public static void createKeyPairBase64(String keysName, String keysPath) {
+        try(FileOutputStream pubStream = new FileOutputStream("%s/%s.%s".formatted(keysPath, keysName, EXT_PUBLIC));
+            FileOutputStream pkStream = new FileOutputStream("%s/%s.%s".formatted(keysPath, keysName, EXT_PRIVATE))
         ) {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(RSA);
             kpg.initialize(1024);
@@ -204,13 +204,13 @@ public class EncryptionService {
 
             // Save Public Key
             // pubStream.write("-----BEGIN RSA PUBLIC KEY-----\n".getBytes());
-            pubStream.write(Base64.getEncoder().encodeToString(publicKey.getEncoded()).getBytes(UTF_8));
+            pubStream.write(Base64.getEncoder().encode(publicKey.getEncoded()));
             // pubStream.write("\n-----END RSA PUBLIC KEY-----\n".getBytes());
 
             // Save Private Key
-            pkStream.write(Base64.getEncoder().encodeToString(privateKey.getEncoded()).getBytes(UTF_8));
+            pkStream.write(Base64.getEncoder().encode(privateKey.getEncoded()));
         } catch (NoSuchAlgorithmException | IOException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.log(SEVERE, e.getMessage(), e);
         }
     }
 

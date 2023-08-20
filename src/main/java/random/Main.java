@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static random.services.EncryptionService.decrypt;
-import static random.services.EncryptionService.saveKeyPairBase64;
+import static random.services.EncryptionService.createKeyPairBase64;
 import static random.util.Utils.getStringFromReader;
 import static random.util.Utils.saveToFile;
 
@@ -68,9 +68,9 @@ public class Main implements Runnable {
 
         @Override
         public void run() {
-            saveKeyPairBase64(
+            createKeyPairBase64(
                     keysName == null ? "key" : keysName,
-                    keysPath == null ? ".\\" : keysPath
+                    keysPath == null ? "." : keysPath
             );
         }
     }
