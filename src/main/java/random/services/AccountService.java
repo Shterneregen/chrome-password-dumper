@@ -19,6 +19,14 @@ public class AccountService {
         }
     }
 
+    public void showShortAccountsInfo() {
+        try {
+            accountFormatterService.showShortAccountsInfo(chromeService.getProfiles());
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
+
     public void saveAccountsInfoToFile(String filePath, String pubKeyPath) {
         try {
             accountFormatterService.saveAccountsInfoToFile(chromeService.getProfiles(), filePath, pubKeyPath);

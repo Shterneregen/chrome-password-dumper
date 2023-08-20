@@ -66,7 +66,7 @@ public class ChromeService {
             }
             List<ChromeAccount> accounts = new ArrayList<>();
             while (rs.next()) {
-                ChromeAccount account = new ChromeAccount(
+                accounts.add(new ChromeAccount(
                         rs.getString("username_value"),
                         rs.getString("username_element"),
                         rs.getString("display_name"),
@@ -77,8 +77,7 @@ public class ChromeService {
                         rs.getString("date_last_used"),
                         rs.getString("date_password_modified"),
                         rs.getInt("times_used")
-                );
-                accounts.add(account);
+                ));
             }
             return accounts;
         } catch (Exception e) {

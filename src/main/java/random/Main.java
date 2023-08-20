@@ -22,6 +22,7 @@ import static random.util.Utils.saveToFile;
 @Command(name = "", subcommands = {
         Main.Dump.class,
         Main.Show.class,
+        Main.ShowShort.class,
         Main.GenerateKeyPair.class,
         Main.DecryptString.class,
         Main.DecryptFile.class
@@ -43,6 +44,14 @@ public class Main implements Runnable {
         @Override
         public void run() {
             accountService.showAccountsInfo();
+        }
+    }
+
+    @Command(name = "show-short", description = "Show passwords")
+    static class ShowShort implements Runnable {
+        @Override
+        public void run() {
+            accountService.showShortAccountsInfo();
         }
     }
 

@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
 import static random.services.EncryptionService.encrypt;
 import static random.util.Utils.getCurrentTime;
 
@@ -34,7 +36,7 @@ public class AccountFormatterService {
     public void saveAccountsInfoToFile(Map<String, List<ChromeAccount>> profiles,
                                        String newFiePath, String pubKeyPath) throws IOException {
 
-        final List<String> accountsInfo = getAccountsInfo(profiles);
+        final List<String> accountsInfo = getAccountsInfoAsTable(profiles);
 
         String savePath = newFiePath != null && !newFiePath.equals("") ? newFiePath : ".";
         File file = new File(savePath + System.getProperty("file.separator"),
@@ -53,10 +55,14 @@ public class AccountFormatterService {
     }
 
     public void showAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
-        getAccountsInfo(profiles).forEach(System.out::println);
+        getAccountsInfoAsTable(profiles).forEach(System.out::println);
     }
 
-    private List<String> getAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
+    public void showShortAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
+        getShortAccountsInfo(profiles).forEach(System.out::println);
+    }
+
+    private List<String> getAccountsInfoAsTable(Map<String, List<ChromeAccount>> profiles) {
         final List<String> lines = new ArrayList<>();
         for (Entry<String, List<ChromeAccount>> profile : profiles.entrySet()) {
             lines.add("==================================================");
@@ -79,6 +85,43 @@ public class AccountFormatterService {
                             account.originUrl()
                     )).toList();
             lines.add(tableGenerator.generateTable(headersList, rowsList));
+        }
+        return lines;
+    }
+
+    private List<String> getShortAccountsInfo(Map<String, List<ChromeAccount>> profiles) {
+        final List<String> lines = new ArrayList<>();
+        for (Entry<String, List<ChromeAccount>> profile : profiles.entrySet()) {
+            lines.add("==================================================");
+            lines.add(profile.getKey());
+            lines.add("==================================================");
+
+            int maxUserNameLen = profile.getValue().stream()
+                    .map(ChromeAccount::usernameValue)
+                    .map(String::length)
+                    .max(naturalOrder())
+                    .orElse(0);
+
+            int maxPswLen = profile.getValue().stream()
+                    .map(ChromeAccount::password)
+                    .map(String::length)
+                    .max(naturalOrder())
+                    .orElse(0);
+
+            AtomicInteger counter = new AtomicInteger();
+            String pattern = "%-3d | %-" + maxUserNameLen + "s | %-" + maxPswLen + "s | %s";
+
+            List<String> data = profile.getValue().stream()
+                    .filter(acc -> !acc.usernameValue().isBlank() || !acc.password().isBlank())
+                    .sorted(comparing(ChromeAccount::usernameValue))
+                    .map(account -> pattern.formatted(
+                            counter.incrementAndGet(),
+                            account.usernameValue(),
+                            account.password(),
+                            account.originUrl()
+                    ))
+                    .toList();
+            lines.addAll(data);
         }
         return lines;
     }

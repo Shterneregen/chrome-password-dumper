@@ -11,12 +11,14 @@ import java.util.Calendar;
 
 public class Utils {
 
+    private Utils() {
+    }
+
     public static void saveToFile(String str) throws IOException {
-        String[] lines = str.split(",");
-        File file = new File(getCurrentTime() + ".txt");
+        File file = new File("%s.txt".formatted(getCurrentTime()));
         file.createNewFile();
 //        Files.write(file.toPath(), str.getBytes("UTF-8"));
-        Files.write(file.toPath(), Arrays.asList(lines));
+        Files.write(file.toPath(), Arrays.asList(str.split(",")));
     }
 
     public static String getStringFromReader(Reader reader) throws IOException {
@@ -34,9 +36,6 @@ public class Utils {
     }
 
     public static String getCurrentTime() {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("dd-MM-yy-HH-mm-ss");
-        return currentTime.format(cal.getTime());
+        return new SimpleDateFormat("dd-MM-yy-HH-mm-ss").format(Calendar.getInstance().getTime());
     }
-
 }

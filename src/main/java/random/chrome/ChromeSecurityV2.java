@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class ChromeSecurityV2 {
     private static final Logger LOG = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     private static final int GCM_TAG_LENGTH = 16;
-    private final static int GCM_IV_LENGTH = 12;
+    private static final int GCM_IV_LENGTH = 12;
 
     private ChromeSecurityV2() {
     }
